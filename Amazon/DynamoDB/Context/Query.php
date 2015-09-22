@@ -239,7 +239,6 @@ class Query
         }
     }
 
-
     public function GetFormatted()
     {
         $parameters = array();

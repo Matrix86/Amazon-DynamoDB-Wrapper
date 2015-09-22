@@ -9,8 +9,7 @@ class UpdateItem
     private $UpdateExpression;
     private $ConditionExpression;
 
-    private $Expected;
-    private $returnValues;
+    private $ReturnValues;
 
     private static function startsWith($haystack, $needle, $icase = true)
 	{
@@ -36,16 +35,10 @@ class UpdateItem
 	    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== FALSE);
 	}
 
-    public function SetExpected(Expected $expected)
-    {
-        $this->Expected = $expected;
-
-        return $this;
-    }
 
     public function SetReturnValues($returnValues)
     {
-        $this->returnValues = $returnValues;
+        $this->ReturnValues = $returnValues;
 
         return $this;
     }
@@ -53,26 +46,6 @@ class UpdateItem
     public function __construct()
     {
         $this->UpdateExpression = "";
-    }
-
-    public function UpdateExpression($expr)
-    {
-        // if( startsWith($expr, "SET") )
-        // {
-        //     UpdateSet($expr);
-        // }
-        // else if( startsWith($expr, "REMOVE") )
-        // {
-        //
-        // }
-        // else if( startsWith($expr, "ADD") )
-        // {
-        //
-        // }
-        // else if( startsWith($expr, "DELETE") )
-        // {
-        //
-        // }
     }
 
     private function AddAttributeName($attributeName)
@@ -285,86 +258,21 @@ class UpdateItem
         //! You can have many actions in a single expression,
         //! such as the following: SET a=:value1, b=:value2 DELETE :value3, :value4, :value5
 
-        // if(preg_match_all( "/([a-z0-9_\-\.]+)\s*[\"]?([^\",]+)[\"]?/i", $expr, $match ))
-        // {
-        //     $this->UpdateExpression .= " DELETE ";
-        //
-        //     $singleOp = array();
-        //
-        //     $in = count($this->ExpressionAttributeNames);
-        //     $iv = count($this->ExpressionAttributeValues);
-        //
-        //     for( $i = 1; $i <= count($match[1]); $i++ )
-        //     {
-        //         $op = "";
-        //
-        //         $name = $match[1][$i-1];
-        //         $value = $match[2][$i-1];
-        //
-        //         if( !isset($this->ExpressionAttributeNames[$name]) )
-		// 		{
-		// 			$this->ExpressionAttributeNames[$name] = "#N".++$in;
-		// 		}
-        //
-        //         $op = $this->ExpressionAttributeNames[$name] . " = ";
-        //
-        //         if( $this->startsWith($value, "\"") && $this->endsWith($value, "\"") )
-		// 		{
-        //             //! String Value
-		// 			$this->ExpressionAttributeValues[":val".++$iv] = new \Amazon\DynamoDB\Attribute($value, 'S');
-        //
-        //             $op .= ":val".$iv;
-		// 		}
-		// 		else if( is_numeric($value) )
-        //         {
-        //             //! Numeric Value
-        //             $this->ExpressionAttributeValues[":val".++$iv] = new \Amazon\DynamoDB\Attribute($value, 'N');
-        //
-        //             $op .= ":val".$iv;
-        //         }
-        //
-        //         $singleOp[] = $op;
-        //     }
-        //
-        //     for( $i = 0; $i < count($singleOp); $i++ )
-        //     {
-        //         $this->UpdateExpression .= $singleOp[$i];
-        //
-        //         if( $i != count($singleOp) - 1 )
-        //         {
-        //             $this->UpdateExpression .= ", ";
-        //         }
-        //         else
-        //         {
-        //             $this->UpdateExpression .= " ";
-        //         }
-        //     }
-        //
-        // }
     }
 
     public function GetFormatted()
     {
        $parameters = array();
 
-       $expected = $this->Expected;
-
-       if( $expected !== null )
+       $VerifyAndAddParam = function($param) use (&$parameters)
        {
-           $expectedParameters = array();
-
-           foreach( $expected as $name => $attribute )
+           if( $this->$param != null )
            {
-               $expectedParameters[$name] = $attribute->GetFormatted();
+               $parameters[$param] = $this->$param;
            }
+       };
 
-           $parameters['Expected'] = $expectedParameters;
-       }
-
-       if( $this->returnValues !== null )
-       {
-           $parameters['ReturnValues'] = $this->returnValues;
-       }
+       $VerifyAndAddParam('ReturnValues');
 
        if( $this->ExpressionAttributeNames !== null )
        {

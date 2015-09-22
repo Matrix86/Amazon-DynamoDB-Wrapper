@@ -4,19 +4,11 @@ namespace Amazon\DynamoDB\Context;
 
 class AddItem
 {
-    private $expected;
-    private $returnValues;
-
-    public function SetExpected(Expected $expected)
-    {
-        $this->expected = $expected;
-
-        return $this;
-    }
+    private $ReturnValues;
 
     public function SetReturnValues($returnValues)
     {
-        $this->returnValues = $returnValues;
+        $this->ReturnValues = $returnValues;
 
         return $this;
     }
@@ -25,26 +17,15 @@ class AddItem
     {
        $parameters = array();
 
-       $expected = $this->expected;
-
-       if( $expected !== null )
+       $VerifyAndAddParam = function($param) use (&$parameters)
        {
-           $expectedParameters = array();
-
-           foreach( $expected as $name => $attribute )
+           if( $this->$param != null )
            {
-               $expectedParameters[$name] = $attribute->GetFormatted();
+               $parameters[$param] = $this->$param;
            }
+       };
 
-           $parameters['Expected'] = $expectedParameters;
-       }
-
-       $returnValues = $this->returnValues;
-
-       if( $returnValues !== null )
-       {
-           $parameters['ReturnValues'] = $returnValues;
-       }
+       $VerifyAndAddParam('ReturnValues');
 
        return $parameters;
     }
