@@ -4,12 +4,12 @@ namespace Amazon\DynamoDB\Context;
 
 class GetItem
 {
-    private $attributes;
-    private $consistentRead;
+    private $AttributesToGet;
+    private $ConsistentRead;
 
     public function SetAttributes($attributes)
     {
-        $this->attributes = $attributes;
+        $this->AttributesToGet = $attributes;
 
         return $this;
     }
@@ -25,19 +25,17 @@ class GetItem
     {
         $parameters = array();
 
-        $attributes = $this->attributes;
-
-        if( $attributes !== null )
+        $VerifyAndAddParam = function($param) use (&$parameters)
         {
-            $parameters['AttributesToGet'] = $attributes;
-        }
+            if( $this->$param != null )
+            {
+                $parameters[$param] = $this->$param;
+            }
+        };
 
-        $consistentRead = $this->consistentRead;
-        if( $consistentRead !== null )
-        {
-            $parameters['ConsistentRead'] = $consistentRead;
-        }
-        
+        $VerifyAndAddParam('AttributesToGet');
+        $VerifyAndAddParam('ConsistentRead');
+
         return $parameters;
     }
 }
