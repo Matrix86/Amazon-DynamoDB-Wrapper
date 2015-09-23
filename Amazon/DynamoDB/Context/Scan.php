@@ -131,57 +131,6 @@ class Scan
         $this->IndexName = $name;
     }
 
-    //! The condition that specifies the key value(s) for items to be
-    //! retrieved by the Query action.
-    // public function SetKeyConditionExpression($primaryCondition, $rangeCondition = null)
-    // {
-    //     if(preg_match( "/([^\s=]+)\s*=\s*([\"]?[^\"]+[\"]?)/i", $primaryCondition, $match ))
-    //     {
-    //         if( isset($match[1]) && isset($match[2]) )
-    //         {
-    //             $newName  = $this->AddAttributeName($match[1]);
-    //             $newValue = $this->AddAttributeValue($match[2]);
-    //
-    //             $this->KeyConditionExpression = $newName." = ".$newValue;
-    //         }
-    //     }
-    //
-    //     if( $rangeCondition !== null )
-    //     {
-    //         if( preg_match_all( "/([^\s=]+)\s*([<>=]{1,2})\s*([\"]?[^\"\s]+[\"]?)\s*(AND)?|([^\s=]+)\s*BETWEEN\s*([\"]?[^\"\s]+[\"]?)\s*AND\s*([\"]?[^\"\s]+[\"]?)/i", $rangeCondition, $match ) )
-    //         {
-    //             $matchCount = count($match[0]);
-    //
-    //             for($i = 0; $i < $matchCount; $i++)
-    //             {
-    //                 if( !empty($match[1][$i]) )
-    //                 {
-    //                     $newName  = $this->AddAttributeName($match[1][$i]);
-    //                     $operator = $match[2][$i];
-    //                     $value    = $this->AddAttributeValue($match[3][$i]);
-    //
-    //                     $operation = $newName." ".$operator." ".$value;
-    //                 }
-    //                 else if( !empty($match[5][$i]) )
-    //                 {
-    //
-    //                     $newName  = $this->AddAttributeName($match[5][$i]);
-    //                     $value1   = $this->AddAttributeValue($match[6][$i]);
-    //                     $value2   = $this->AddAttributeValue($match[7][$i]);
-    //
-    //                     $operation = $newName." BETWEEN ".$value1." AND ".$value2;
-    //                 }
-    //                 else
-    //                 {
-    //                     continue;
-    //                 }
-    //
-    //                 $this->KeyConditionExpression .= " AND ".$operation;
-    //             }
-    //         }
-    //     }
-    // }
-
     public function SetLimit($num)
     {
         if( is_numeric($num) )
