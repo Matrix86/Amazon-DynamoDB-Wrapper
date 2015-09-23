@@ -261,24 +261,39 @@ class AmazonDynamoDB
 		$table = $context->GetTable();
 		$query = $context->GetFormatted();
 
-		//var_dump($query);exit();
-
-		$response = $this->client->query($query);
-
-        $this->AddWriteConsumedCapacityUnits( $table, floatval($response['ConsumedCapacityUnits']) );
-
 		$items = array();
+		$loop  = false;
 
-		if( isset($response['Items']) && !empty($response['Items']) )
+		do
 		{
-			foreach( $response['Items'] as $responseItem )
-			{
-                $item = new Item($table);
-                $item->CreateItemFromDynamoDB($responseItem);
+			$response = $this->client->query($query);
 
-				$items[] = $item;
-            }
-        }
+	        $this->AddWriteConsumedCapacityUnits( $table, floatval($response['ConsumedCapacityUnits']) );
+
+			if( isset($response['Items']) && !empty($response['Items']) )
+			{
+				foreach( $response['Items'] as $responseItem )
+				{
+	                $item = new Item($table);
+	                $item->CreateItemFromDynamoDB($responseItem);
+
+					$items[] = $item;
+	            }
+	        }
+
+			if( isset($response['LastEvaluatedKey']) )
+			{
+				$context->SetExclusiveStartKey($response['LastEvaluatedKey']);
+				$query = $context->GetFormatted();
+
+				$loop = true;
+			}
+			else
+			{
+				$loop = false;
+			}
+		}
+		while($loop);
 
 		return $items;
 	}
