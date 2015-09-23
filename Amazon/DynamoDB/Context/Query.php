@@ -113,11 +113,12 @@ class Query
         }
     }
 
-    public function SetExclusiveStartKey()
+    public function SetExclusiveStartKey($key)
     {
         //! TODO:
         //! The primary key of the first item that this operation will evaluate.
         //! Use the value that was returned for LastEvaluatedKey in the previous operation.
+        $this->ExclusiveStartKey = $key;
     }
 
     //! A string that contains conditions that DynamoDB applies AFTER the
@@ -285,6 +286,7 @@ class Query
         $VerifyAndAddParam('ScanIndexForward');
         $VerifyAndAddParam('Select');
         $VerifyAndAddParam('TableName');
+        $VerifyAndAddParam('ExclusiveStartKey');
 
         return $parameters;
     }
