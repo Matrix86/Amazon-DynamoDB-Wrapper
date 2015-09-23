@@ -54,15 +54,15 @@ class AmazonDynamoDB
 		}
 	}
 
-	private function AddReadConsumedCapacityUnits($tableName, $units)
+	private function AddReadConsumedCapacityUnits($ConsumedCapacity)
 	{
-		if( isset( $this->readCapacityUnit[$tableName] ) )
+		if( isset( $this->readCapacityUnit[$ConsumedCapacity['TableName']] ) )
 		{
-			$this->readCapacityUnit[$tableName] += $units;
+			$this->readCapacityUnit[$ConsumedCapacity['TableName']] += $ConsumedCapacity['CapacityUnits'];
 		}
 		else
 		{
-			$this->readCapacityUnit[$tableName] = $units;
+			$this->readCapacityUnit[$ConsumedCapacity['TableName']] = $ConsumedCapacity['CapacityUnits'];
 		}
 	}
 
@@ -92,15 +92,15 @@ class AmazonDynamoDB
 		}
 	}
 
-	private function AddWriteConsumedCapacityUnits($tableName, $units)
+	private function AddWriteConsumedCapacityUnits($ConsumedCapacity)
 	{
-		if( isset( $this->writeCapacityUnit[$tableName] ) )
+		if( isset( $this->writeCapacityUnit[$ConsumedCapacity['TableName']] ) )
 		{
-			$this->writeCapacityUnit[$tableName] += $units;
+			$this->writeCapacityUnit[$ConsumedCapacity['TableName']] += $ConsumedCapacity['CapacityUnits'];
 		}
 		else
 		{
-			$this->writeCapacityUnit[$tableName] = $units;
+			$this->writeCapacityUnit[$ConsumedCapacity['TableName']] = $ConsumedCapacity['CapacityUnits'];
 		}
 	}
 
@@ -176,7 +176,7 @@ class AmazonDynamoDB
 
 		$response = $this->client->putItem($ItemDescriptor);
 
-		$this->AddWriteConsumedCapacityUnits($table, floatval($response['ConsumedCapacityUnits']));
+		$this->AddWriteConsumedCapacityUnits( floatval($response['ConsumedCapacityUnits']) );
 
 		return $this->populateAttributes($response);
 	}
@@ -207,7 +207,7 @@ class AmazonDynamoDB
 
 		$response = $this->client->getItem($ItemDescriptor);
 
-        $this->AddReadConsumedCapacityUnits( $table, floatval($response['ConsumedCapacityUnits']) );
+        $this->AddReadConsumedCapacityUnits( floatval($response['ConsumedCapacityUnits']) );
 
 		if( isset($response['Item']) )
 		{
@@ -247,7 +247,7 @@ class AmazonDynamoDB
 
 		$response = $this->client->updateItem($UpdateItem);
 
-        $this->AddWriteConsumedCapacityUnits( $table, floatval($response['ConsumedCapacityUnits']) );
+        $this->AddWriteConsumedCapacityUnits( floatval($response['ConsumedCapacityUnits']) );
 
 		return $this->populateAttributes($response);
 	}
@@ -256,7 +256,7 @@ class AmazonDynamoDB
 	{
 	}
 
-	function Query( Context\Query $context )
+	public function Query( Context\Query $context )
 	{
 		$table = $context->GetTable();
 		$query = $context->GetFormatted();
@@ -268,7 +268,49 @@ class AmazonDynamoDB
 		{
 			$response = $this->client->query($query);
 
-	        $this->AddWriteConsumedCapacityUnits( $table, floatval($response['ConsumedCapacityUnits']) );
+	        $this->AddReadConsumedCapacityUnits( floatval($response['ConsumedCapacityUnits']) );
+
+			if( isset($response['Items']) && !empty($response['Items']) )
+			{
+				foreach( $response['Items'] as $responseItem )
+				{
+	                $item = new Item($table);
+	                $item->CreateItemFromDynamoDB($responseItem);
+
+					$items[] = $item;
+	            }
+	        }
+
+			if( isset($response['LastEvaluatedKey']) )
+			{
+				$context->SetExclusiveStartKey($response['LastEvaluatedKey']);
+				$query = $context->GetFormatted();
+
+				$loop = true;
+			}
+			else
+			{
+				$loop = false;
+			}
+		}
+		while($loop);
+
+		return $items;
+	}
+
+	public function Scan( Context\Scan $context )
+	{
+		$table = $context->GetTable();
+		$query = $context->GetFormatted();
+
+		$items = array();
+		$loop  = false;
+
+		do
+		{
+			$response = $this->client->scan($query);
+
+	        $this->AddReadConsumedCapacityUnits( floatval($response['ConsumedCapacity']) );
 
 			if( isset($response['Items']) && !empty($response['Items']) )
 			{

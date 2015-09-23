@@ -81,5 +81,24 @@ foreach( $res as $item )
 echo "\n\n";
 
 
+// SCAN
+
+$query = new \Amazon\DynamoDB\Context\Scan('Daily_stats');
+$res = $dc->Scan($query);
+
+echo "Scan results:\n";
+foreach( $res as $item )
+{
+
+    echo "id: ".$item['id']."\n";
+    echo "dateday: ".$item['dateday']."\n";
+    echo "IT counter1 : ".$item['IT']['counter1']."\n";
+    echo "EN counter1 : ".$item['EN']['counter1']."\n";
+    echo "\n";
+}
+
+echo "\n\n";
+
+
 
 ?>
