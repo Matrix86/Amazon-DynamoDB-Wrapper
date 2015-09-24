@@ -170,7 +170,7 @@ class AmazonDynamoDB
 		if( $context === null )
 		{
 			//! Create context to return Consumed Capacity
-			$context = Context\AddItem();
+			$context = new Context\AddItem();
 		}
 
 		$ItemDescriptor += $context->GetFormatted();

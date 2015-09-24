@@ -60,7 +60,7 @@ class UpdateItem
             $names   = explode(".", $attributeName);
 
             $name    = $names[0];
-            $subname = ".".$names[1];
+            $subname = $names[1];
         }
 
         if( !isset($this->ExpressionAttributeNames[$name]) )
@@ -68,7 +68,17 @@ class UpdateItem
             $this->ExpressionAttributeNames[$name] = "#N".++$in;
         }
 
-        return "#N".$in.$subname;
+        if( !empty($subname) )
+        {
+            if( !isset($this->ExpressionAttributeNames[$subname]) )
+            {
+                $this->ExpressionAttributeNames[$subname] = "#N".++$in;
+            }
+
+            return $this->ExpressionAttributeNames[$name]."."."#N".$in;
+        }
+
+        return $this->ExpressionAttributeNames[$name];
     }
 
     //! SET var = 1, var1 = var1 + 2, var2 = "asd"
@@ -112,6 +122,7 @@ class UpdateItem
                 }
                 else
                 {
+                    //! operation
                     $cleanValue = preg_replace('/\s+/', ' ', $value);
 
                     $line = explode( " ", $cleanValue );
@@ -189,12 +200,13 @@ class UpdateItem
     //! ADD aNumber :val2, anotherNumber :val3
     public function SetSectionAdd($expr)
     {
-        if(preg_match_all( "/([a-z0-9_\-\.]+)\s*([\"]?[^\",]+[\"]?)/i", $expr, $match ))
+        $first = true;
+
+        $singleOp = array();
+
+        //! ADD SET
+        if( preg_match_all("/([a-z0-9_\-\.]+)\s+\[([\"]?[^\",\[\]]+[\"]?)\]/i", $expr, $match) )
         {
-            $this->UpdateExpression .= " ADD ";
-
-            $singleOp = array();
-
             $in = count($this->ExpressionAttributeNames);
             $iv = count($this->ExpressionAttributeValues);
 
@@ -211,6 +223,45 @@ class UpdateItem
 
                 if( $this->startsWith($value, "\"") && $this->endsWith($value, "\"") )
 				{
+                    $value = substr($value, 1, -1);
+
+                    //! String Value
+					$this->ExpressionAttributeValues[":val".++$iv] = new \Amazon\DynamoDB\Attribute( array($value), 'SS' );
+
+                    $op .= ":val".$iv;
+				}
+				else if( is_numeric($value) )
+                {
+                    //! Numeric Value
+                    $this->ExpressionAttributeValues[":val".++$iv] = new \Amazon\DynamoDB\Attribute( array($value), 'NS' );
+
+                    $op .= ":val".$iv;
+                }
+
+                $singleOp[] = $op;
+            }
+        }
+
+        if(preg_match_all( "/([a-z0-9_\-\.]+)\s+([\"]?[^\",\[\]]+[\"]?)/i", $expr, $match ))
+        {
+            $in = count($this->ExpressionAttributeNames);
+            $iv = count($this->ExpressionAttributeValues);
+
+            for( $i = 1; $i <= count($match[1]); $i++ )
+            {
+                $op = "";
+
+                $name = $match[1][$i-1];
+                $value = $match[2][$i-1];
+
+                $newname = $this->AddAttributeName($name);
+
+                $op = $newname . " ";
+
+                if( $this->startsWith($value, "\"") && $this->endsWith($value, "\"") )
+				{
+                    $value = substr($value, 1, -1);
+
                     //! String Value
 					$this->ExpressionAttributeValues[":val".++$iv] = new \Amazon\DynamoDB\Attribute($value, 'S');
 
@@ -226,21 +277,25 @@ class UpdateItem
 
                 $singleOp[] = $op;
             }
+        }
 
-            for( $i = 0; $i < count($singleOp); $i++ )
+        for( $i = 0; $i < count($singleOp); $i++ )
+        {
+            if($i == 0)
             {
-                $this->UpdateExpression .= $singleOp[$i];
-
-                if( $i != count($singleOp) - 1 )
-                {
-                    $this->UpdateExpression .= ", ";
-                }
-                else
-                {
-                    $this->UpdateExpression .= " ";
-                }
+                $this->UpdateExpression .= " ADD ";
             }
 
+            $this->UpdateExpression .= $singleOp[$i];
+
+            if( $i != count($singleOp) - 1 )
+            {
+                $this->UpdateExpression .= ", ";
+            }
+            else
+            {
+                $this->UpdateExpression .= " ";
+            }
         }
     }
 
