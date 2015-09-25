@@ -41,27 +41,39 @@ class Attribute
 		{
             foreach( $value as $nam => $val )
 			{
-				if( is_numeric($nam) )
+				if( is_string($nam) )
 				{
-					if( !is_numeric($val) )
-					{
-	                    return 'SS';
-	                }
-				}
-				else {
 					return 'M';
 				}
+				else
+				{
+					if( is_string($val) )
+					{
+						return 'SS';
+					}
+				}
+
+				// if( is_numeric($nam) )
+				// {
+				// 	if( !is_numeric($val) )
+				// 	{
+	            //         return 'SS';
+	            //     }
+				// }
+				// else {
+				// 	return 'M';
+				// }
             }
 
 			return 'NS';
         }
-		elseif( is_numeric($value) )
+		elseif( is_string($value) )
 		{
-            return 'N';
+            return 'S';
         }
 		else
 		{
-            return 'S';
+            return 'N';
         }
     }
 
