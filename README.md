@@ -4,22 +4,22 @@
 
 This is an object wrapper for Amazon DynamoDB SDK. It helps to manipulate the items that you can use with DynamoDB.
 
-##Getting Started
-###Include the library
+## Getting Started
+### Include the library
 
 ```php
 require("Amazon\DynamoDB\AutoLoader.php");
 ```
 
-###Create Connection
+### Create Connection
 ```php
 $dc = new \Amazon\DynamoDB\AmazonDynamoDB($key, $secret, $region);
 ```
 
-###Manage tables
->Work in progress
+### Manage tables
+> Work in progress
 
-###Add item
+### Add item
 ```php
 $item = new \Amazon\DynamoDB\Item('TABLENAME');
 $item['numericAttribute'] = 3;
@@ -43,7 +43,7 @@ $ctx->SetConditionExpression("attribute_not_exists('numericAttribute')");
 $dc->AddItem($item)
 ```
 
-###Get item
+### Get item
 ```php
 $item = new \Amazon\DynamoDB\Item('TABLENAME');
 $item['primary'] = 3;
@@ -53,7 +53,7 @@ $res = $dc->GetItem( $item );
 
 ```
 
-###Update item
+### Update item
 ```php
 $item = new \Amazon\DynamoDB\Item('TABLENAME');
 $item['primary'] = 3;
@@ -87,10 +87,10 @@ From DynamoDB documentation
 * UPDATED_NEW - The new versions of only the updated attributes are returned.
 
 
-###Delete item
+### Delete item
 > Work in progress
 
-###Perform a query
+### Perform a query
 ```php
 $item = new \Amazon\DynamoDB\Context\Query('TABLENAME');
 $query->SetConsistentRead(true);
@@ -99,13 +99,13 @@ $res = $dc->Query($query);
 
 ```
 
-###Perform a scan
+### Perform a scan
 ```php
 $query = new \Amazon\DynamoDB\Context\Scan('TABLENAME');
 $res = $dc->Scan($query);
 ```
 
-###Get Consumed Capacity
+### Get Consumed Capacity
 ```php
 //! Get the Consumed capacity units used for read all tables
 $dc->GetReadConsumedCapacityUnits();
